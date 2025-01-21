@@ -46,13 +46,29 @@ pc = Pinecone(api_key=PINECONE_API_KEY)
 
 index = pc.Index('audio')
 
-batch_size = 5
+# batch_size = 5
 
-for i in tqdm(range(0,len(audios), batch_size)):
-    i_end = min(i+batch_size,len(audios))
-    batch = audios[i:i_end]
-    _, emb = model.inference(batch)
-    ids = [ f"{id}" for id in range(i,i_end)]
-    metadata = [{'category': category} for category in data[i:i_end]['category']]
-    vectors = list(zip(ids,emb.tolist(),metadata))
-    _ = index.upsert(vectors=vectors)
+# for i in tqdm(range(0,len(audios), batch_size)):
+#     i_end = min(i+batch_size,len(audios))
+#     batch = audios[i:i_end]
+#     _, emb = model.inference(batch)
+#     ids = [ f"{id}" for id in range(i,i_end)]
+#     metadata = [{'category': category} for category in data[i:i_end]['category']]
+#     vectors = list(zip(ids,emb.tolist(),metadata))
+#     _ = index.upsert(vectors=vectors)
+
+audio_num = 3
+print(data[audio_num]["category"])
+qr_audio = data[audio_num]["audio"]["array"] #column vector
+qr_audio = qr_audio[None,:]
+
+_, emb = model.inference(qr_audio)
+print(emb.shape)
+print(data[audio_num]["category"])
+
+res = index.query(vector=emb.tolist(), top_k=2, include_metadata=True)
+# print(res)
+for item in res['matches']:
+    a = data[int(item['id'])]["audio"]["array"]
+    sd.play(a, samplerate=sr)
+    sd.wait()

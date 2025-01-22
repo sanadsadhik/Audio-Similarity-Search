@@ -34,28 +34,28 @@ model = AudioTagging(checkpoint_path=None, device=device)
 
 pc = Pinecone(api_key=PINECONE_API_KEY)
 
-# pc.create_index(
-#     name="audio",
-#     dimension=2048,
-#     metric="cosine",
-#     spec=ServerlessSpec(    
-#         cloud="aws",
-#         region="us-east-1"
-#     )
-# )
+pc.create_index(
+    name="audio",
+    dimension=2048,
+    metric="cosine",
+    spec=ServerlessSpec(    
+        cloud="aws",
+        region="us-east-1"
+    )
+)
 
 index = pc.Index('audio')
 
-# batch_size = 5
+batch_size = 5
 
-# for i in tqdm(range(0,len(audios), batch_size)):
-#     i_end = min(i+batch_size,len(audios))
-#     batch = audios[i:i_end]
-#     _, emb = model.inference(batch)
-#     ids = [ f"{id}" for id in range(i,i_end)]
-#     metadata = [{'category': category} for category in data[i:i_end]['category']]
-#     vectors = list(zip(ids,emb.tolist(),metadata))
-#     _ = index.upsert(vectors=vectors)
+for i in tqdm(range(0,len(audios), batch_size)):
+    i_end = min(i+batch_size,len(audios))
+    batch = audios[i:i_end]
+    _, emb = model.inference(batch)
+    ids = [ f"{id}" for id in range(i,i_end)]
+    metadata = [{'category': category} for category in data[i:i_end]['category']]
+    vectors = list(zip(ids,emb.tolist(),metadata))
+    _ = index.upsert(vectors=vectors)
 
 audio_num = 3
 print(data[audio_num]["category"])
